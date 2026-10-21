@@ -1,0 +1,18 @@
+{% extends "tracker/base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+    <div class="tracker-card auth-card">
+        <h3 class="text-center mb-1 page-title">Welcome back</h3>
+        <p class="text-center text-muted mb-4">Log in to split and settle expenses.</p>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+            {% include "tracker/_form_field.html" with field=form.username %}
+            {% include "tracker/_form_field.html" with field=form.password %}
+            <button class="btn btn-primary w-100">Log in</button>
+        </form>
+        <p class="mt-3 text-center mb-0">New here? <a href="{% url 'signup' %}">Create an account</a></p>
+    </div>
+</div>
+{% endblock %}

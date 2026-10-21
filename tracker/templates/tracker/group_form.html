@@ -1,0 +1,38 @@
+{% extends "tracker/base.html" %}
+{% block title %}{% if is_edit %}Edit {{ group.name }}{% else %}Create group{% endif %}{% endblock %}
+{% block content %}
+<div class="tracker-card form-card">
+    <h4 class="mb-3">{% if is_edit %}Edit group{% else %}Create group{% endif %}</h4>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+        {% include "tracker/_form_field.html" with field=form.name %}
+        <div class="mb-3">
+            <label class="form-label">Members</label>
+            {% if form.members.field.queryset.exists %}
+                <input type="search" class="form-control form-control-sm mb-2" placeholder="Filter people…" data-filter-target="#memberList">
+                <div class="member-list border rounded p-2 bg-white" id="memberList">{{ form.members }}</div>
+            {% else %}
+                <div class="text-muted small border rounded p-2">No other users yet. Ask friends to sign up, then add them here.</div>
+            {% endif %}
+            <div class="form-text">{{ form.members.help_text }}</div>
+            {% for err in form.members.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
+        </div>
+        <button class="btn btn-primary w-100">{% if is_edit %}Save changes{% else %}Create group{% endif %}</button>
+    </form>
+    <a href="{% if is_edit %}{% url 'group_dashboard' group.id %}{% else %}{% url 'groups_list' %}{% endif %}" class="btn btn-link mt-2 px-0">← Back</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('[data-filter-target]').forEach((input) => {
+    const list = document.querySelector(input.dataset.filterTarget);
+    input.addEventListener('input', () => {
+        const q = input.value.toLowerCase();
+        list.querySelectorAll('div > div, li').forEach((row) => {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

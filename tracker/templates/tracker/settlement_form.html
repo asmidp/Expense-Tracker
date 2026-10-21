@@ -1,0 +1,21 @@
+{% extends "tracker/base.html" %}
+{% block title %}Settle up · {{ group.name }}{% endblock %}
+{% block content %}
+<div class="tracker-card form-card">
+    <h4 class="mb-1">{% if is_edit %}Edit settlement{% else %}Record a payment{% endif %}</h4>
+    <div class="text-muted mb-3">Group: <span class="fw-semibold">{{ group.name }}</span></div>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+        <div class="row g-2">
+            <div class="col-sm-6">{% include "tracker/_form_field.html" with field=form.payer %}</div>
+            <div class="col-sm-6">{% include "tracker/_form_field.html" with field=form.receiver %}</div>
+            <div class="col-sm-6">{% include "tracker/_form_field.html" with field=form.amount %}</div>
+            <div class="col-sm-6">{% include "tracker/_form_field.html" with field=form.date %}</div>
+        </div>
+        {% include "tracker/_form_field.html" with field=form.note %}
+        <button class="btn btn-primary w-100">{% if is_edit %}Save changes{% else %}Record settlement{% endif %}</button>
+    </form>
+    <a href="{% url 'group_dashboard' group.id %}" class="btn btn-link mt-2 px-0">← Back</a>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "tracker/base.html" %}
+{% block title %}Leave {{ group.name }}{% endblock %}
+{% block content %}
+<div class="tracker-card form-card">
+    <h4 class="mb-2">Leave {{ group.name }}?</h4>
+    {% if balance != 0 %}
+        <div class="alert alert-warning">
+            You still have an unsettled balance of
+            <strong>{% if balance > 0 %}+{% endif %}₹{{ balance }}</strong> in this group. Settle up before leaving.
+        </div>
+        <a href="{% url 'group_dashboard' group.id %}" class="btn btn-primary w-100">Back to group</a>
+    {% else %}
+        <p class="text-muted mb-4">You will no longer see this group or its expenses unless someone adds you again.</p>
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger w-100">Leave group</button>
+        </form>
+        <a href="{% url 'group_dashboard' group.id %}" class="btn btn-link mt-2 px-0">Cancel</a>
+    {% endif %}
+</div>
+{% endblock %}

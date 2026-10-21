@@ -1,0 +1,69 @@
+{% extends "tracker/base.html" %}
+{% load static %}
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} expense · {{ group.name }}{% endblock %}
+{% block content %}
+<div class="tracker-card form-card form-card-wide">
+    <h4 class="mb-1">{% if is_edit %}Edit expense{% else %}Add expense{% endif %}</h4>
+    <div class="text-muted mb-3">Group: <span class="fw-semibold">{{ group.name }}</span></div>
+
+    <form method="post" novalidate id="expenseForm">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }} {% endfor %}</div>
+        {% endif %}
+
+        <div class="row g-2">
+            <div class="col-md-6">{% include "tracker/_form_field.html" with field=form.description %}</div>
+            <div class="col-md-3">{% include "tracker/_form_field.html" with field=form.amount %}</div>
+            <div class="col-md-3">{% include "tracker/_form_field.html" with field=form.date %}</div>
+            <div class="col-md-4">{% include "tracker/_form_field.html" with field=form.category %}</div>
+            <div class="col-md-4">{% include "tracker/_form_field.html" with field=form.payer %}</div>
+            <div class="col-md-4">{% include "tracker/_form_field.html" with field=form.split_type %}</div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Split between</h6>
+            <span class="small fw-semibold" id="splitStatus"></span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle split-table" data-split-table>
+                <thead>
+                    <tr>
+                        <th style="width:40px;"></th>
+                        <th>Member</th>
+                        <th class="col-exact" style="width:170px;">Amount (₹)</th>
+                        <th class="col-percent" style="width:150px;">Percent (%)</th>
+                        <th class="col-equal text-end" style="width:140px;">Share</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in split_rows %}
+                    <tr data-user-row>
+                        <td>
+                            <input class="form-check-input" type="checkbox" name="split_include_{{ row.user.id }}" value="1"
+                                   {% if row.included %}checked{% endif %} data-include aria-label="Include {{ row.user.username }}">
+                        </td>
+                        <td>{{ row.user.username }}{% if row.user == request.user %} <span class="text-muted small">(you)</span>{% endif %}</td>
+                        <td class="col-exact">
+                            <input class="form-control form-control-sm" type="number" step="0.01" min="0"
+                                   name="split_exact_{{ row.user.id }}" value="{{ row.exact }}" placeholder="0.00" data-exact>
+                        </td>
+                        <td class="col-percent">
+                            <input class="form-control form-control-sm" type="number" step="0.01" min="0" max="100"
+                                   name="split_percent_{{ row.user.id }}" value="{{ row.percent }}" placeholder="0" data-percent>
+                        </td>
+                        <td class="col-equal text-end text-muted" data-share>–</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn btn-primary w-100 mt-2">{% if is_edit %}Save changes{% else %}Save expense{% endif %}</button>
+    </form>
+    <a href="{% url 'group_dashboard' group.id %}" class="btn btn-link mt-2 px-0">← Back</a>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'tracker/js/expense_form.js' %}"></script>{% endblock %}

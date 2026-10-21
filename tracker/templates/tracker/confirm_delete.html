@@ -1,0 +1,13 @@
+{% extends "tracker/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="tracker-card form-card">
+    <h4 class="mb-2">{{ title }}</h4>
+    <p class="text-muted mb-4">{{ body }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger w-100">Yes, delete</button>
+    </form>
+    <a href="{% url 'group_dashboard' group.id %}" class="btn btn-link mt-2 px-0">Cancel</a>
+</div>
+{% endblock %}

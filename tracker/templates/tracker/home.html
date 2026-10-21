@@ -1,0 +1,101 @@
+{% extends "tracker/base.html" %}
+{% load tracker_extras %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>{% endblock %}
+{% block content %}
+<div class="dashboard-header mb-3">
+    <h2 class="page-title mb-0">Hi, {{ user.username }}</h2>
+    <a href="{% url 'group_create' %}" class="btn btn-primary"><i class="fa-solid fa-plus me-2"></i>New group</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-6 col-lg-3">
+        <div class="tracker-card stat-card">
+            <h6>You are owed</h6>
+            <div class="stat-value text-success">₹{{ summary.owed|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="tracker-card stat-card">
+            <h6>You owe</h6>
+            <div class="stat-value text-danger">₹{{ summary.owes|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="tracker-card stat-card">
+            <h6>Net balance</h6>
+            <div class="stat-value {% if summary.net > 0 %}text-success{% elif summary.net < 0 %}text-danger{% endif %}">
+                {% if summary.net > 0 %}+{% endif %}₹{{ summary.net|floatformat:2 }}
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="tracker-card stat-card">
+            <h6>Your total share</h6>
+            <div class="stat-value">₹{{ my_total_share|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-lg-5">
+        <div class="tracker-card h-100">
+            <h5 class="mb-3">Your groups</h5>
+            {% for row in summary.rows %}
+                <a class="group-row" href="{% url 'group_dashboard' row.group.id %}">
+                    <span class="fw-semibold">{{ row.group.name }}</span>
+                    {% if row.balance > 0 %}
+                        <span class="text-success small">owed ₹{{ row.balance }}</span>
+                    {% elif row.balance < 0 %}
+                        <span class="text-danger small">you owe ₹{{ row.balance|absval }}</span>
+                    {% else %}
+                        <span class="text-muted small">settled up</span>
+                    {% endif %}
+                </a>
+            {% empty %}
+                <p class="text-muted mb-0">You're not in any groups yet. <a href="{% url 'group_create' %}">Create one</a> to start splitting.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="tracker-card h-100">
+            <h5 class="mb-3">Recent activity</h5>
+            <ul class="list-unstyled mb-0">
+                {% for e in recent %}
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <div>
+                            <div class="fw-semibold">{{ e.description }}</div>
+                            <div class="text-muted small">{{ e.group.name }} · {{ e.payer.username }} paid · {{ e.date|date:"d M Y" }}</div>
+                        </div>
+                        <div class="fw-semibold">₹{{ e.amount }}</div>
+                    </li>
+                {% empty %}
+                    <li class="text-muted">No expenses yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% if has_data %}
+<div class="row g-3 mt-1">
+    <div class="col-lg-5">
+        <div class="tracker-card">
+            <h5><i class="fa-solid fa-chart-pie me-2"></i>Your spending by category</h5>
+            <div class="chart-wrap chart-wrap-medium"><canvas id="categoryPieChart"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="tracker-card">
+            <h5><i class="fa-solid fa-chart-column me-2"></i>Your share per month</h5>
+            <div class="chart-wrap chart-wrap-medium"><canvas id="monthlyBarChart"></canvas></div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{{ chart|json_script:"chart-data" }}
+<script src="{% static 'tracker/js/dashboard.js' %}"></script>
+{% endblock %}
